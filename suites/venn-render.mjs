@@ -1,13 +1,13 @@
 // Venn diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one line
-// per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws a venn diagram with no groups that move what is in them, so its numbers are where
 // the scene has them. They are drawn here written out in full, as the oracle's hooks have num()
-// write them while limuExactNumbers is set, and compared whole: a difference in the last bit is
+// write them while oracleExactNumbers is set, and compared whole: a difference in the last bit is
 // a difference in the port. The outline of an overlap is written as Pele writes its path, arcs
-// with their radii and flags, for the test to draw again as limu draws an arc. The styles an
+// with their radii and flags, for the test to draw again as a port draws an arc. The styles an
 // author gives are written as Pele writes them on each circle, path and text, for the test to
-// read as limu reads them.
+// read as a port reads them.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, n, pt, stroke } from '../lib/svg.mjs';
@@ -96,14 +96,14 @@ export default async function ({ pele, src, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'venn') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg, fontSize) });
@@ -116,7 +116,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 4000) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -149,9 +149,9 @@ export default async function ({ pele, src, write, random }) {
   const usable = [...seen].filter((s) => s.length <= 3000);
   const next = mutator(usable, fragments(pele), random(32));
   while (drawn < 5000) each(next());
-  // The test draws an overlap's arcs again as limu draws them, so the lines of overlaps are
+  // The test draws an overlap's arcs again as a port draws them, so the lines of overlaps are
   // kept in full, and so are those of sets and texts with a style, css=, which it reads as a
   // browser draws it.
   const keep = (line) => line.startsWith('overlap ') || / css=[^ ]/.test(line);
-  write('diagram/venn/testdata/pele/render.json', { cases: out }, { keep });
+  write('venn-render', { cases: out }, { keep });
 }

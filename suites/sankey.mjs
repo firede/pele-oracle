@@ -106,7 +106,7 @@ export function hostile(pele) {
   });
   const out = [];
   // A payload with a lone surrogate is left out before it is written in, as JSON in a template
-  // writes it as an escape that a Go string cannot hold either once it is read.
+  // writes it as an escape that a string in UTF-8 cannot hold either once it is read.
   for (const t of templates) for (const p of payloads) if (!lone(p)) out.push(t(p));
   return out.filter((s) => !lone(s) && s.length <= 4000);
 }
@@ -236,5 +236,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
 
-  write('diagram/sankey/testdata/pele/sankey.json', { cases: all.map(run) });
+  write('sankey', { cases: all.map(run) });
 }

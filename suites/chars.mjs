@@ -42,7 +42,7 @@ export default async function ({ src, write, random }) {
     for (let k = 1 + Math.floor(next() * 6); k > 0; k--) s += pieces[Math.floor(next() * pieces.length)];
     lower.push(s);
   }
-  write('internal/chars/testdata/pele/chars.json', {
+  write('chars', {
     toLowerCase: lower.map((s) => ({ s, lower: s.toLowerCase() })),
     letters,
     toString: numbers.map((n) => ({ n: enc(n), s: String(n) })),

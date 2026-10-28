@@ -1,9 +1,9 @@
 // Radar charts drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws a chart about its center, in a group it then moves to its place. Its SVG is drawn
 // here with its numbers written out in full, as the oracle's hooks have num() write them while
-// limuExactNumbers is set, and each number in the group is moved as the scene moves it, the
+// oracleExactNumbers is set, and each number in the group is moved as the scene moves it, the
 // group's offset added to it, so that the lines hold every number in full, as String() writes
 // it, and a difference in the last bit shows. The hooks also have each label written with the
 // point it is centered on, its size and the text of its lines, which is what the scene holds of
@@ -11,7 +11,7 @@
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { attr, pt, readHead } from '../lib/svg.mjs';
-import { readLabel } from '../lib/limu.mjs';
+import { readLabel } from '../lib/marks.mjs';
 import { FRAGMENTS, corpus, randomDiagrams } from './radar.mjs';
 
 const TRANSLATE = /^translate\(([^,]*),([^)]*)\)$/;
@@ -134,7 +134,7 @@ export function readSvg(svg, fontSize) {
         lines.push(`${what(whole)} rect ${box} ${rx === undefined ? '-' : 'r' + rx} ${pen(whole)}`);
         break;
       }
-      case 'limu-label': {
+      case 'oracle-label': {
         const l = readLabel(whole);
         const text = l.lines.map((line) => line.map((s) => s.text).join(''));
         const size = inherited(whole, 'font-size') ?? String(fontSize ?? 16);
@@ -156,14 +156,14 @@ export default async function ({ pele, src, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'radar') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg, fontSize) });
@@ -174,7 +174,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 20000) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -193,5 +193,5 @@ export default async function ({ pele, src, write, random }) {
     const s = next();
     if (s.length <= 600) each(s);
   }
-  write('diagram/radar/testdata/pele/render.json', { cases: out });
+  write('radar-render', { cases: out });
 }

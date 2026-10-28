@@ -40,5 +40,5 @@ export default async function ({ src, cases, write, random }) {
     if (error) return { source, parsed: model !== undefined, error };
     return { source, type: result.type, mermaidType: model.mermaidType };
   });
-  write('testdata/pele/limu.json', { cases: out });
+  write('index', { cases: out });
 }

@@ -1,18 +1,18 @@
 // Mindmaps drawn end to end: what Pele's render draws, read back out of its SVG as one line per
-// thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele writes the map about a point of its own, and the inside of a node about the node, where
 // a scene holds where everything is on the page. Pele's SVG is drawn here with its numbers
-// written out in full, as the oracle's hooks have num() write them while limuExactNumbers is
+// written out in full, as the oracle's hooks have num() write them while oracleExactNumbers is
 // set; the hooks also write each label, the point it is drawn about and all that is in it,
 // which stands here in place of Pele's drawing of it, and each node's size and top. A number
-// inside groups is moved as limu's layout moves it: by the innermost group's move first, then
+// inside groups is moved as a port's layout moves it: by the innermost group's move first, then
 // by each one out from it. The lines hold every number in full, as String() writes it, so
 // that a difference in the last bit shows.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { attr, TRANSLATE, n } from '../lib/svg.mjs';
-import { readLabel, withoutPele } from '../lib/limu.mjs';
+import { readLabel, withoutPele } from '../lib/marks.mjs';
 import { FRAGMENTS, corpus, hostileCorpus, maps } from './mindmap.mjs';
 
 // The icons the host has, in the cases drawn with icons.
@@ -43,7 +43,7 @@ export function readSvg(svg) {
   const capJoin = () => `${pen('cap', 'butt')} ${pen('join', 'miter')}`;
   // Inside an icon, whose drawing is the host's.
   let icon = false;
-  for (const m of body.matchAll(/<(\/?)(g|rect|path|polygon|circle|ellipse|svg|limu-label)\b[^>]*>/g)) {
+  for (const m of body.matchAll(/<(\/?)(g|rect|path|polygon|circle|ellipse|svg|oracle-label)\b[^>]*>/g)) {
     const e = m[0];
     if (m[1]) {
       if (m[2] === 'g') {
@@ -124,7 +124,7 @@ export function readSvg(svg) {
         icon = !e.endsWith('/>');
         lines.push(`icon ${attr(e, 'data-icon')} ${pt(attr(e, 'x'), attr(e, 'y'))},${n(Number(attr(e, 'width')))},${n(Number(attr(e, 'height')))}`);
         break;
-      case 'limu-label': {
+      case 'oracle-label': {
         const l = readLabel(e);
         const cls = /class="([^"]*)"/.exec(l.attrs)?.[1];
         const fill = /fill="([^"]*)"/.exec(l.attrs)?.[1] ?? '-';
@@ -148,7 +148,7 @@ export default async function ({ src, pele, write, random }) {
   const host = (name) => (ICONS.includes(name) ? '<path d="M0,0"/>' : undefined);
   const draw = (source, opt) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, {
         measurer: metricsMeasurer,
@@ -163,7 +163,7 @@ export default async function ({ src, pele, write, random }) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'mindmap') return false;
     out.push({ src: source, ...opt, icons: opt.icons || undefined, lines: readSvg(r.svg) });
@@ -196,5 +196,5 @@ export default async function ({ src, pele, write, random }) {
   const usable = [...seen].filter((s) => s.length <= 3000);
   const next = mutator(usable, FRAGMENTS, random(62));
   for (let i = 0; drawn < 2500 && i < 40000; i++) each(next());
-  write('diagram/mindmap/testdata/pele/render.json', { cases: out });
+  write('mindmap-render', { cases: out });
 }

@@ -1,17 +1,17 @@
 // Kanban boards drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele writes a column's insides about the column, and a card's about the card, where a scene
 // holds where everything is on the page. Pele's SVG is drawn here with its numbers written in
-// full, as the oracle's hooks have num() write them while limuExactNumbers is set, and with
+// full, as the oracle's hooks have num() write them while oracleExactNumbers is set, and with
 // a column's or a card's text written as where its lines start or end and what is in them, in
-// place of Pele's drawing of it. A number inside groups is moved as limu's layout moves it:
+// place of Pele's drawing of it. A number inside groups is moved as a port's layout moves it:
 // the groups' moves are added up from the outermost in, the number is added to their sum, and
 // only then is it written to two decimals as Pele writes it.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { attr, TRANSLATE } from '../lib/svg.mjs';
-import { readLabel, withoutPele } from '../lib/limu.mjs';
+import { readLabel, withoutPele } from '../lib/marks.mjs';
 import { FRAGMENTS, boards, corpus, hostileCorpus } from './kanban.mjs';
 
 // The icons the host has, in the cases drawn with icons.
@@ -40,7 +40,7 @@ export function readSvg(svg, num) {
   let icon = false;
   const from = svg.indexOf('<g class="pele-cluster');
   if (from < 0) return lines;
-  for (const m of withoutPele(svg.slice(from)).matchAll(/<(\/?)(g|rect|path|text|svg|limu-label|a)\b[^>]*>/g)) {
+  for (const m of withoutPele(svg.slice(from)).matchAll(/<(\/?)(g|rect|path|text|svg|oracle-label|a)\b[^>]*>/g)) {
     const e = m[0];
     if (m[1]) {
       if (m[2] === 'g' && open.pop()) moves.pop();
@@ -82,7 +82,7 @@ export function readSvg(svg, num) {
       case 'a':
         lines.push(`link ${attr(e, 'href')}`);
         break;
-      case 'limu-label': {
+      case 'oracle-label': {
         // Each line of the text, from where it starts or ends at its middle.
         const l = readLabel(e);
         const cls = /class="([^"]*)"/.exec(l.attrs)[1];
@@ -107,7 +107,7 @@ export default async function ({ src, pele, write, random }) {
   const host = (name) => (ICONS.includes(name) ? '<path d="M0,0"/>' : undefined);
   const draw = (source, maxWidth, fontSize, icons) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, icons: icons ? host : undefined, outputLimit: Infinity });
     } catch (e) {
@@ -115,7 +115,7 @@ export default async function ({ src, pele, write, random }) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'kanban') return false;
     out.push({ src: source, maxWidth, fontSize, icons: icons || undefined, lines: readSvg(r.svg, num) });
@@ -142,5 +142,5 @@ export default async function ({ src, pele, write, random }) {
   const usable = [...seen].filter((s) => s.length <= 3000);
   const next = mutator(usable, FRAGMENTS, random(32));
   while (drawn < 3500) each(next());
-  write('diagram/kanban/testdata/pele/render.json', { cases: out });
+  write('kanban-render', { cases: out });
 }

@@ -376,5 +376,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/pie/testdata/pele/pie.json', { cases: all.map(run) });
+  write('pie', { cases: all.map(run) });
 }

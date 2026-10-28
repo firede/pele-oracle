@@ -553,5 +553,5 @@ export default async function ({ src, pele, write, random }) {
   const jnext = mutator(JSON_SEEDS, JSON_FRAGMENTS, random(9));
   for (let i = 0; i < 600; i++) add(`usecase-beta\njson P@${jnext()}\n`);
 
-  write('diagram/usecase/testdata/pele/usecase.json', { cases: all.map(run) });
+  write('usecase', { cases: all.map(run) });
 }

@@ -48,5 +48,5 @@ export default async function ({ src, write, random }) {
     while (chosen.size < 14) chosen.add(rnd() < 0.7 ? pick(values) : (rnd() - 0.3) * 10 ** Math.floor(rnd() * 30 - 10));
     for (const v of chosen) cases.push([spec, enc(v), format(v)]);
   }
-  write('diagram/treemap/testdata/pele/format.json', { cases });
+  write('treemap-format', { cases });
 }

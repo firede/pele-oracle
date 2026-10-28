@@ -277,5 +277,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
 
-  write('diagram/kanban/testdata/pele/kanban.json', { cases: all.map(run) });
+  write('kanban', { cases: all.map(run) });
 }

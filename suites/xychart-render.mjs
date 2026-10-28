@@ -1,11 +1,11 @@
 // XY charts drawn end to end: what Pele's render draws, read back out of its SVG as one line
-// per thing drawn, in the order drawn, and the errors of the charts it refuses to draw. limu's
+// per thing drawn, in the order drawn, and the errors of the charts it refuses to draw. A port's
 // test writes the same lines from its scene.
 //
 // Pele draws a chart with no groups that move what is in them but for the title of its left
 // axis, which it turns about a point, so its numbers are where the scene has them. Pele's SVG
 // is drawn here with its numbers written out in full, as the oracle's hooks have num() write
-// them while limuExactNumbers is set, and the lines hold every number in full, as String()
+// them while oracleExactNumbers is set, and the lines hold every number in full, as String()
 // writes it, so that a difference in the last bit shows. A number Pele writes relative to the
 // one before it is added to that one first, as the scene holds where it ends.
 import { lone } from '../lib/corpus.mjs';
@@ -164,7 +164,7 @@ export default async function ({ pele, src, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
@@ -176,7 +176,7 @@ export default async function ({ pele, src, write, random }) {
       }
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'xychart') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg, fontSize) });
@@ -187,7 +187,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -207,5 +207,5 @@ export default async function ({ pele, src, write, random }) {
     const s = next();
     if (s.length <= 3000) each(s);
   }
-  write('diagram/xychart/testdata/pele/render.json', { cases: out });
+  write('xychart-render', { cases: out });
 }

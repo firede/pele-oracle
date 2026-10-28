@@ -1,6 +1,6 @@
 // Agent flows drawn end to end: what Pele's render draws, read back out of its SVG as one line
 // per thing drawn, in the order drawn, with every number of its geometry as the SVG writes it.
-// limu's test writes the same lines from its scene.
+// A port's test writes the same lines from its scene.
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, tag, capJoin, readCasings } from '../lib/svg.mjs';
 import { FRAGMENTS, agentflowCorpus } from './agentflow.mjs';
@@ -217,5 +217,5 @@ export default async function ({ pele, src, cases, write, random }) {
   }
   // The test reads a line with a tag among its classes with the tag moved last, so the lines
   // that name one are kept in full.
-  write('diagram/agentflow/testdata/pele/render.json', { cases: out }, { keep: (line) => line.includes('clickable') });
+  write('agentflow-render', { cases: out }, { keep: (line) => line.includes('clickable') });
 }

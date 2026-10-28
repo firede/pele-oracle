@@ -422,5 +422,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
 
-  write('diagram/quadrant/testdata/pele/quadrant.json', { cases: all.map(run) });
+  write('quadrant', { cases: all.map(run) });
 }

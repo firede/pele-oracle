@@ -340,5 +340,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
 
-  write('diagram/venn/testdata/pele/venn.json', { cases: all.map(run) });
+  write('venn', { cases: all.map(run) });
 }

@@ -1,15 +1,15 @@
 // Sankey diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
 // line per thing drawn, in the order drawn, and the errors of the diagrams it refuses to draw.
-// limu's test writes the same lines from its scene.
+// A port's test writes the same lines from its scene.
 //
 // Pele draws the chart in a group it moves by where the labels reach, and its title outside
 // it. Its SVG is drawn here with its numbers written in full, as the oracle's hooks have num()
-// write them while limuExactNumbers is set, and with each label's y the middle of its line in
-// place of its baseline, as the scene holds a label. A number in the group is moved as limu's
+// write them while oracleExactNumbers is set, and with each label's y the middle of its line in
+// place of its baseline, as the scene holds a label. A number in the group is moved as a port's
 // layout moves it, by the group's move added to it, and the lines hold every number in full,
 // as String() writes it, so that a difference in the last bit shows. The style a diagram's
-// config gives a bar or a band is written as Pele writes it, for the test to read as limu
-// reads it.
+// config gives a bar or a band is written as Pele writes it, for the test to read as a
+// port reads it.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, n } from '../lib/svg.mjs';
@@ -184,7 +184,7 @@ export default async function ({ pele, src, write, random }) {
   let refused = 0;
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
@@ -198,7 +198,7 @@ export default async function ({ pele, src, write, random }) {
       }
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'sankey') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg) });
@@ -209,7 +209,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 4000) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -241,7 +241,7 @@ export default async function ({ pele, src, write, random }) {
     each(`---\nconfig:\n  sankey:\n    height: ${height}\n    showValues: false\n    nodePadding: ${padding}\n---\nsankey\n${rows}`);
   }
   if (refused < 20) throw new Error(`only ${refused} diagrams refused`);
-  // The test reads the style Pele writes, css=, as limu reads declarations, so the lines with
+  // The test reads the style Pele writes, css=, as a port reads declarations, so the lines with
   // one are kept in full.
-  write('diagram/sankey/testdata/pele/render.json', { cases: out }, { keep: (line) => / css=[^ ]/.test(line) });
+  write('sankey-render', { cases: out }, { keep: (line) => / css=[^ ]/.test(line) });
 }

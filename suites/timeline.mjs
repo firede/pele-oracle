@@ -254,5 +254,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
 
-  write('diagram/timeline/testdata/pele/timeline.json', { cases: all.map(run) });
+  write('timeline', { cases: all.map(run) });
 }

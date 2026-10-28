@@ -401,5 +401,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/treemap/testdata/pele/treemap.json', { cases: all.map(run) });
+  write('treemap', { cases: all.map(run) });
 }

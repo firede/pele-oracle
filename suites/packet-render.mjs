@@ -1,5 +1,5 @@
 // Packet diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws a packet with no groups that move what is in them, so its numbers are where the
 // scene has them, and are compared as Pele writes them, to two decimals.
@@ -70,7 +70,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -91,5 +91,5 @@ export default async function ({ pele, src, write, random }) {
     const s = next();
     if (s.length <= 3000 && !/9{6}|\+[1-9]\d{4}/.test(s)) each(s);
   }
-  write('diagram/packet/testdata/pele/render.json', { cases: out });
+  write('packet-render', { cases: out });
 }

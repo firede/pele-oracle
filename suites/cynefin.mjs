@@ -365,5 +365,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
   for (const s of hostile()) add(s);
-  write('diagram/cynefin/testdata/pele/cynefin.json', { cases: all.map(run) });
+  write('cynefin', { cases: all.map(run) });
 }

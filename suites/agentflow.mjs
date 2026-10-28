@@ -449,5 +449,5 @@ export default async function ({ pele, src, cases, write, random }) {
   }
   const runs = sequences(random(8), 1000).filter((s) => !lone(s));
   const all = [...WRITTEN, ...corpus, ...fuzz, ...runs].map((x) => (typeof x === 'string' ? { src: x } : x));
-  write('diagram/agentflow/testdata/pele/agentflow.json', { agentflows: all.map((x) => ({ ...x, ...(x.forced ? { direct: direct(x.src) } : run(x.src, x.maxEdges)) })) });
+  write('agentflow', { agentflows: all.map((x) => ({ ...x, ...(x.forced ? { direct: direct(x.src) } : run(x.src, x.maxEdges)) })) });
 }

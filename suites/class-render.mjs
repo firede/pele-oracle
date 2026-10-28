@@ -1,17 +1,17 @@
 // Class diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // A scene has no groups to move what is in them, so it holds where everything is on the page,
 // where Pele writes the inside of a class or a note about its middle, and everything about the
 // title. Pele's SVG is drawn here with its numbers written out in full, as the oracle's hooks
-// have num() write them while limuExactNumbers is set; each number is moved by the groups it is
+// have num() write them while oracleExactNumbers is set; each number is moved by the groups it is
 // in, one move after the other from the innermost out, as the scene's are, and then written to
 // two decimals as Pele writes them. The markers are drawn again where the title moves them,
 // from their tips and directions, which classMarker writes before them while the flag is set.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, capJoin } from '../lib/svg.mjs';
-import { readMarker } from '../lib/limu.mjs';
+import { readMarker } from '../lib/marks.mjs';
 import { WRITTEN } from './class.mjs';
 
 // The fragments mutations splice in, for text that parses and still draws something odd.
@@ -207,7 +207,7 @@ export function readSvg(svg, num, redraw) {
       while (open.length > 0 && open.pop().name !== name);
       continue;
     }
-    if (name === 'limu-marker') {
+    if (name === 'oracle-marker') {
       written = readMarker(whole);
       continue;
     }
@@ -315,14 +315,14 @@ export default async function ({ src, cases, write, random }) {
   // lists them.
   const draw = (source, maxWidth, mono) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, outputLimit: Infinity, monospace: mono ? ['members'] : undefined });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'class') return false;
     out.push({ src: source, maxWidth, ...(mono ? { mono } : {}), lines: readSvg(r.svg, num, redraw) });
@@ -363,5 +363,5 @@ export default async function ({ src, cases, write, random }) {
   for (const s of FILLS) draw(s);
   // The test reads a line with a tag among its classes with the tag moved last, so the lines
   // that name one are kept in full.
-  write('diagram/class/testdata/pele/render.json', { cases: out }, { keep: (line) => line.includes('clickable') });
+  write('class-render', { cases: out }, { keep: (line) => line.includes('clickable') });
 }

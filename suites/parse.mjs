@@ -156,5 +156,5 @@ export default async function ({ src, cases, write, random }) {
     lines.push(text);
   }
   const encoded = [...all.filter((s) => s.includes('#')), ...lines].map((text) => ({ text, encoded: encodeEntities(text) }));
-  write('diagram/testdata/pele/parse.json', { preprocessed, encoded });
+  write('parse', { preprocessed, encoded });
 }

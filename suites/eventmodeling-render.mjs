@@ -1,10 +1,10 @@
 // Event modeling diagrams drawn end to end: what Pele's render draws, read back out of its SVG
-// as one line per thing drawn, in the order drawn. limu's test writes the same lines from its
+// as one line per thing drawn, in the order drawn. A port's test writes the same lines from its
 // scene.
 //
 // Pele draws an event model with no groups that move what is in them, so its numbers are
 // where the scene has them. Pele's SVG is drawn here with its numbers written out in full, as
-// the oracle's hooks have num() write them while limuExactNumbers is set, and the lines hold
+// the oracle's hooks have num() write them while oracleExactNumbers is set, and the lines hold
 // every number in full, as String() writes it, so that a difference in the last bit shows.
 //
 // A text is written as where its first line sits, its class, anchor, size, fill, weight and
@@ -149,7 +149,7 @@ export default async function ({ pele, src, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize, autoDirection, directionBreakpoint) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       const options = { measurer: metricsMeasurer, maxWidth, fontSize, autoDirection, directionBreakpoint, outputLimit: Infinity };
       const model = parse(source, options);
@@ -159,7 +159,7 @@ export default async function ({ pele, src, write, random }) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     out.push({ src: source, maxWidth, fontSize, autoDirection, directionBreakpoint, lines: readSvg(r.svg, fontSize) });
     return true;
@@ -169,7 +169,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 3000) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -195,5 +195,5 @@ export default async function ({ pele, src, write, random }) {
   // keeps whole, from Pele's test of it.
   each(`eventmodeling\ntf 01 cmd A {${'a'.repeat(47)}😀Z}`);
   each(`eventmodeling\ntf 01 cmd A {${'😀'.repeat(30)}${'中'.repeat(30)}}`);
-  write('diagram/eventmodeling/testdata/pele/render.json', { cases: out });
+  write('eventmodeling-render', { cases: out });
 }

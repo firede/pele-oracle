@@ -194,5 +194,5 @@ export default async function ({ src, pele, write, random }) {
     for (let k = 1 + Math.floor(trnd() * 8); k > 0; k--) s += pieces[Math.floor(trnd() * pieces.length)] + (trnd() < 0.3 ? ' ' : '');
     add(s);
   }
-  write('diagram/info/testdata/pele/info.json', { cases: all.map(run) });
+  write('info', { cases: all.map(run) });
 }

@@ -132,5 +132,5 @@ export default async function ({ src, write, random }) {
       return { source, error: e.message };
     }
   });
-  write('internal/yaml/testdata/pele/yaml.json', { yaml });
+  write('yaml', { yaml });
 }

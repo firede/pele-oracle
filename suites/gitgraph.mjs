@@ -401,5 +401,5 @@ export default async function ({ src, pele, write, random }) {
   const hnext = mutator([...all.slice(-1500)], FRAGMENTS, random(24));
   for (let i = 0; i < 800; i++) add(hnext());
 
-  write('diagram/gitgraph/testdata/pele/gitgraph.json', { cases: all.map(run) });
+  write('gitgraph', { cases: all.map(run) });
 }

@@ -369,5 +369,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/radar/testdata/pele/radar.json', { cases: all.map(run) });
+  write('radar', { cases: all.map(run) });
 }

@@ -1,9 +1,9 @@
 // Tree views drawn end to end: what Pele's render draws, read back out of its SVG as one line
-// per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws a tree view with no groups that move what is in them, so its numbers are where
 // the scene has them. Pele's SVG is drawn here with its numbers written out in full, as the
-// oracle's hooks have num() write them while limuExactNumbers is set; the hooks also write
+// oracle's hooks have num() write them while oracleExactNumbers is set; the hooks also write
 // each label, the point the scene holds it at and all that is in it, which stands here in
 // place of Pele's drawing of it, and as the y of each name and description written in one
 // line the middle of its row. The lines hold every number in full, as String() writes it, so
@@ -15,7 +15,7 @@
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, n, pt, readHead } from '../lib/svg.mjs';
-import { readLabel, withoutPele } from '../lib/limu.mjs';
+import { readLabel, withoutPele } from '../lib/marks.mjs';
 import { FRAGMENTS, corpus, randomDiagrams } from './treeview.mjs';
 
 // The icons the host has, in the cases drawn with icons: one of Pele's own among them, which
@@ -128,7 +128,7 @@ export function readSvg(svg, glyphs) {
         lines.push(`label ${look('start', whole)} ${pt(attr(whole, 'x'), y.slice(1))} | ${style}:${unescape(body.slice(m.index + whole.length, end))}`);
         break;
       }
-      case 'limu-label': {
+      case 'oracle-label': {
         const l = readLabel(whole);
         const at = `${look(l.align, l.attrs)} ${pt(l.x, l.y)}`;
         if (l.lines.length === 1 && l.lines[0].length === 1 && l.lines[0][0].icon === undefined) {
@@ -161,7 +161,7 @@ export default async function ({ pele, src, write, random }) {
   // files.
   const draw = (source, maxWidth, fontSize, icons, mono) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       const monospace = mono ? ['files'] : undefined;
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, icons: icons ? host : undefined, monospace, outputLimit: Infinity });
@@ -169,7 +169,7 @@ export default async function ({ pele, src, write, random }) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'treeView') return false;
     const lines = readSvg(r.svg, GLYPHS);
@@ -183,7 +183,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 3000) return;
     seen.add(source);
     if (!draw(source, undefined, undefined, drawn % 3 === 1)) return;
@@ -206,5 +206,5 @@ export default async function ({ pele, src, write, random }) {
   draw(mono, 90, undefined, false, true);
   usable.slice(0, 300).forEach((s, i) => draw(s, i % 2 === 0 ? NARROW[(i / 2) % NARROW.length] : undefined, i % 5 === 0 ? 13 : undefined, i % 3 === 0, true));
   console.log(`treeview-render: ${out.length} drawings, ${tight} laid out tightly`);
-  write('diagram/treeview/testdata/pele/render.json', { cases: out });
+  write('treeview-render', { cases: out });
 }

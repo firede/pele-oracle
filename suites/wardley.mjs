@@ -512,5 +512,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
   for (const s of hostile()) add(s);
-  write('diagram/wardley/testdata/pele/wardley.json', { cases: all.map(run) });
+  write('wardley', { cases: all.map(run) });
 }

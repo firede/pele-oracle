@@ -190,15 +190,15 @@ export default async function ({ pele, src, cases, write, random }) {
   }
 
   // Outlines with their numbers written out in full, as the oracle's hooks have num() write
-  // them while limuExactNumbers is set, so that those of lines and curves can be compared
+  // them while oracleExactNumbers is set, so that those of lines and curves can be compared
   // number for number.
   const outlines = [];
   const drawShape = (shape, w, h) => {
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       return shapes.drawShape(shape, w, h, SHAPE_ATTRS, LINE_ATTRS);
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
   };
   for (const shape of [...names, 'nonexistent']) {
@@ -248,7 +248,7 @@ export default async function ({ pele, src, cases, write, random }) {
     hypot.push([a, b, Math.hypot(a, b)]);
   }
 
-  write('diagram/internal/draw/testdata/pele/draw.json', {
+  write('draw', {
     names,
     size,
     inset,

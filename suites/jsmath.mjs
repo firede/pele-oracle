@@ -126,5 +126,5 @@ export default async function ({ write, random }) {
   for (let i = 0; i < 1000; i++) r(anySize(-60, 60));
   for (let i = 0; i < 1000; i++) r(anyBits());
 
-  write('internal/jsmath/testdata/pele/math.json', { trig, atan2, acos, asin, round });
+  write('jsmath', { trig, atan2, acos, asin, round });
 }

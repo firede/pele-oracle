@@ -1,20 +1,20 @@
 // Architecture diagrams drawn end to end: what Pele's render draws, read back out of its SVG as
-// one line per thing drawn, in the order drawn. limu's test writes the same lines from its
+// one line per thing drawn, in the order drawn. A port's test writes the same lines from its
 // scene.
 //
 // Pele writes the body of a diagram about a point of its own, and the inside of a node about
 // the node, where a scene holds where everything is on the page. Pele's SVG is drawn here with
 // its numbers written out in full, as the oracle's hooks have num() write them while
-// limuExactNumbers is set; the hooks also write each label, the point it is centered on and
+// oracleExactNumbers is set; the hooks also write each label, the point it is centered on and
 // all that is in it, and each marker, its tip and the way it points, which stand here in place
-// of Pele's drawing of them. A number inside groups is moved as limu's layout moves it: by
+// of Pele's drawing of them. A number inside groups is moved as a port's layout moves it: by
 // the innermost group's move first, then by each one out from it. The lines hold every number
 // in full, as String() writes it, so that a difference in the last bit shows.
 import { join } from 'node:path';
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { attr, TRANSLATE, n, readHead } from '../lib/svg.mjs';
-import { readLabel, readMarker, withoutPele } from '../lib/limu.mjs';
+import { readLabel, readMarker, withoutPele } from '../lib/marks.mjs';
 import { FRAGMENTS, corpus, randomDiagrams, statements } from './architecture.mjs';
 
 // The icons the host has, in the cases drawn with icons: one of Pele's own among them, which
@@ -56,7 +56,7 @@ export function readSvg(svg) {
   };
   // Inside an icon, whose drawing is its own.
   let icon = null;
-  for (const m of body.matchAll(/<(\/?)(g|rect|path|circle|svg|limu-label|limu-marker)\b[^>]*>/g)) {
+  for (const m of body.matchAll(/<(\/?)(g|rect|path|circle|svg|oracle-label|oracle-marker)\b[^>]*>/g)) {
     const e = m[0];
     if (m[1]) {
       if (m[2] === 'g') {
@@ -123,12 +123,12 @@ export function readSvg(svg) {
         };
         if (e.endsWith('/>')) icon = null;
         break;
-      case 'limu-marker': {
+      case 'oracle-marker': {
         const k = readMarker(e);
         lines.push(`marker ${k.type} ${pt(k.x, k.y)} ${n(k.dx)},${n(k.dy)} ${k.color}`);
         break;
       }
-      case 'limu-label': {
+      case 'oracle-label': {
         const l = readLabel(e);
         const cls = /class="([^"]*)"/.exec(l.attrs)?.[1];
         const fill = /fill="([^"]*)"/.exec(l.attrs)?.[1] ?? '-';
@@ -152,14 +152,14 @@ export default async function ({ src, pele, write, random }) {
   const host = (name) => (ICONS.includes(name) ? '<path d="M0,0"/>' : undefined);
   const draw = (source, maxWidth, fontSize, icons) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, icons: icons ? host : undefined, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'architecture') return false;
     out.push({ src: source, maxWidth, fontSize, icons: icons || undefined, lines: readSvg(r.svg) });
@@ -196,5 +196,5 @@ export default async function ({ src, pele, write, random }) {
       big++;
     }
   }
-  write('diagram/architecture/testdata/pele/render.json', { cases: out });
+  write('architecture-render', { cases: out });
 }

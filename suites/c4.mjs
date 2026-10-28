@@ -325,7 +325,7 @@ const FIELDS = ['type', 'descr', 'techn', 'sprite', 'tags', 'link', 'bgColor', '
 const REL_FIELDS = ['techn', 'descr', 'sprite', 'tags', 'link', 'textColor', 'lineColor'];
 const named = (a) => (a ? [a.key, a.value] : undefined);
 
-// A model as the test writes limu's: every field that is defined, a parent by its place among
+// A model as the test writes a port's: every field that is defined, a parent by its place among
 // the boundaries.
 export function dumpModel(db) {
   const index = new Map(db.boundaries.map((b, i) => [b, i]));
@@ -462,5 +462,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/c4/testdata/pele/c4.json', { cases: all.map(run) });
+  write('c4', { cases: all.map(run) });
 }

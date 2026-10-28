@@ -50,5 +50,5 @@ export default async function ({ src, cases, write, random }) {
     );
     return { ...l, label: out };
   });
-  write('text/testdata/pele/text.json', { measure, label });
+  write('text', { measure, label });
 }

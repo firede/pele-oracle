@@ -1,11 +1,11 @@
 // Railroad diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws the rules in a group it moves by half a unit each way, where the scene holds
 // every place on the page. Pele's SVG is drawn here with its numbers written out in full, as
-// the oracle's hooks have num() write them while limuExactNumbers is set, and with the names
+// the oracle's hooks have num() write them while oracleExactNumbers is set, and with the names
 // of rules and the texts of boxes written as the middle of their line, before Pele adds the
-// shift to their baseline. A number inside the group is moved as limu's layout moves it,
+// shift to their baseline. A number inside the group is moved as a port's layout moves it,
 // half a unit added to it; a number Pele writes relative to the one before it, as the arcs
 // and arrows of its tracks, is added to that one first, as the scene holds where it ends;
 // and the lines hold every number in full, as String() writes it, so that a difference in
@@ -136,7 +136,7 @@ export function readSvg(svg) {
       } else if (tag === 'circle') {
         lines.push(`${cls.split(' ')[1].slice(5)} ${pt(off(attr(attrs, 'cx')), off(attr(attrs, 'cy')))} ${n(attr(attrs, 'r'))} ${attr(attrs, 'fill')}`);
       } else if (tag === 'text' && cls === 'pele-edge-label pele-count') {
-        // Where the middle of the count's line is, as limu works it out from its baseline.
+        // Where the middle of the count's line is, as a port works it out from its baseline.
         const y = 0.5 + (Number(attr(attrs, 'y')) - Number(attr(attrs, 'font-size')) * 0.35);
         lines.push(`count t ${pt(off(attr(attrs, 'x')), y)} ${n(attr(attrs, 'font-size'))} ${attr(attrs, 'fill')} | ${content()}`);
       } else if (tag === 'g' && cls.startsWith('pele-node')) {
@@ -227,14 +227,14 @@ export default async function ({ pele, src, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'railroad') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg) });
@@ -267,7 +267,7 @@ export default async function ({ pele, src, write, random }) {
   const usable = [...seen].filter((s) => s.length <= 2000);
   const next = mutator(usable, FRAGMENTS, random(42));
   while (drawn < 2800) each(next());
-  // The test draws the arcs of a track, and the circles at its ends, again as limu draws
+  // The test draws the arcs of a track, and the circles at its ends, again as a port draws
   // them, so their lines are kept in full.
-  write('diagram/railroad/testdata/pele/render.json', { cases: out }, { keep: (line) => /^(start|end) /.test(line) || (/^(track|arrows) /.test(line) && line.includes(' A ')) });
+  write('railroad-render', { cases: out }, { keep: (line) => /^(start|end) /.test(line) || (/^(track|arrows) /.test(line) && line.includes(' A ')) });
 }

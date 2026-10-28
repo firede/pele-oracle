@@ -57,7 +57,7 @@ export default async function ({ src, write, random }) {
     };
   });
 
-  write('diagram/internal/common/testdata/pele/common.json', {
+  write('common', {
     generics: all.map((input) => ({ input, output: parseGenericTypes(input) })),
     labels,
   });

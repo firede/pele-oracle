@@ -390,6 +390,6 @@ export default async function ({ src, pele, write, random }) {
     zones.push({ zone, now: NOWS[3], ...make(NOWS[3]) });
   }
   process.env.TZ = saved;
-  write('diagram/gantt/testdata/pele/gantt.json', { zones: ZONES, cases });
-  write('diagram/gantt/testdata/pele/dates.json', { zones });
+  write('gantt', { zones: ZONES, cases });
+  write('gantt-dates', { zones });
 }

@@ -1,5 +1,5 @@
 // Timeline diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws a timeline with no group that moves what is in it, so the numbers of its SVG are
 // where things are on the page, as the scene holds them, and are compared as Pele writes them.
@@ -123,7 +123,7 @@ export default async function ({ src, pele, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -143,5 +143,5 @@ export default async function ({ src, pele, write, random }) {
     const s = next();
     if (s.length <= 3000) each(s);
   }
-  write('diagram/timeline/testdata/pele/render.json', { cases: out });
+  write('timeline-render', { cases: out });
 }

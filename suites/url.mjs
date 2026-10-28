@@ -170,5 +170,5 @@ export default async function ({ src, write, random }) {
       internalMail: internalLink(input, { linkSchemes: ['mailto', 'obsidian'] }),
     };
   });
-  write('internal/url/testdata/pele/url.json', { url });
+  write('url', { url });
 }

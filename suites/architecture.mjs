@@ -404,5 +404,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/architecture/testdata/pele/architecture.json', { cases: all.map(run) });
+  write('architecture', { cases: all.map(run) });
 }

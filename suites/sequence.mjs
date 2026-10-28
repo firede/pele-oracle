@@ -364,7 +364,7 @@ export default async function ({ src, pele, write, random }) {
     const { types, texts, starts } = tokenize(text);
     return types.map((t, i) => [TOKEN_NAMES[t], texts[i], starts[i]]);
   };
-  // A lone surrogate, which a Go string cannot hold, written by JSON.stringify as an escape.
+  // A lone surrogate, which a string in UTF-8 cannot hold, written by JSON.stringify as an escape.
   const loneOut = (v) => /\\ud[89a-f][0-9a-f]{2}/i.test(JSON.stringify(v));
   const run = (source) => {
     const direct = {
@@ -423,5 +423,5 @@ export default async function ({ src, pele, write, random }) {
   for (let i = 0; i < 600; i++) add(drawable());
 
   const cases = all.map(run).filter((c) => !loneOut(c));
-  write('diagram/sequence/testdata/pele/sequence.json', { cases });
+  write('sequence', { cases });
 }

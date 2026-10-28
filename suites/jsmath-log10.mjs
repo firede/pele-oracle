@@ -14,5 +14,5 @@ export default async function ({ write, random }) {
   const rnd = random(33);
   for (let i = 0; i < 20000; i++) xs.push(Math.pow(10, (rnd() * 2 - 1) * (i % 2 ? 20 : 300)) * (1 + rnd()));
   for (let i = 0; i < 5000; i++) xs.push(1 + (rnd() - 0.5) * Math.pow(2, -10 - Math.floor(rnd() * 40)));
-  write('internal/jsmath/testdata/pele/log10.json', { cases: xs.map((x) => [enc(x), enc(Math.log10(x))]) });
+  write('jsmath-log10', { cases: xs.map((x) => [enc(x), enc(Math.log10(x))]) });
 }

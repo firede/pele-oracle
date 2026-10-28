@@ -1,6 +1,6 @@
 // Labels as Pele writes them into its SVG: each laid out by layoutLabel, then written centered
 // on a point by labelSvg and starting at one by leftLabelSvg, and read back as what a browser
-// is given to place. limu's svg package writes the same labels about its items' points, a
+// is given to place. A port's svg package writes the same labels about its items' points, a
 // Middle and a Start label, and reads its own SVG back the same way.
 //
 // A label is read as a line for each run of text placed on its own, and then a line for each
@@ -146,5 +146,5 @@ export default async function ({ src, write, random }) {
     const start = readLabel(leftLabelSvg(label, 100, 50 - label.height / 2, ''));
     return { text, markdown, size, maxWidth, face, label, middle, start };
   });
-  write('svg/testdata/pele/svg.json', { cases });
+  write('svg', { cases });
 }

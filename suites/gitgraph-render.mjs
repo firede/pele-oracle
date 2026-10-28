@@ -1,14 +1,14 @@
 // Git graphs drawn end to end: what Pele's render draws, read back out of its SVG as one line
-// per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws the graph inside a group it moves into place, where the scene holds where
 // everything is on the page. Pele's SVG is drawn here with its numbers written out in full, as
-// the oracle's hooks have num() write them while limuExactNumbers is set; each number inside
-// the group is moved as limu moves it, and only then written to two decimals as Pele writes it.
+// the oracle's hooks have num() write them while oracleExactNumbers is set; each number inside
+// the group is moved as a port moves it, and only then written to two decimals as Pele writes it.
 //
 // A commit's label that Pele turns about a point with rotate() is held in the scene by its
 // middle, turned, and the box behind it by its outline, a path turned point by point. Both are
-// worked out here from Pele's numbers as limu works them out.
+// worked out here from Pele's numbers as a port works them out.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr } from '../lib/svg.mjs';
@@ -23,13 +23,13 @@ const paintName = (v) => {
   return TOKENS[v] ?? `?${v}`;
 };
 
-// Math.SQRT1_2, and 1 - k for the curves of a rounded corner, as limu's scene.Path.RoundRect
+// Math.SQRT1_2, and 1 - k for the curves of a rounded corner, as a port's RoundRect
 // has it.
 const HALF = Math.SQRT1_2;
 const KAPPA = 0.5522847498307936;
 const ONE_MINUS_KAPPA = 0.4477152501692064;
 
-// A box with corners rounded by radius, as limu's scene.Path.RoundRect draws it: a list of
+// A box with corners rounded by radius, as a port's RoundRect draws it: a list of
 // [op, ...numbers].
 function roundRect(x, y, w, h, radius) {
   radius = Math.max(0, Math.min(radius, w / 2, h / 2));
@@ -245,14 +245,14 @@ export default async function ({ src, pele, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'gitGraph') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg, num) });
@@ -279,5 +279,5 @@ export default async function ({ src, pele, write, random }) {
     const s = next();
     if (s.length <= 2000) each(s);
   }
-  write('diagram/gitgraph/testdata/pele/render.json', { cases: out });
+  write('gitgraph-render', { cases: out });
 }

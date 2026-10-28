@@ -1,18 +1,18 @@
 // Ishikawa diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele writes the body of a diagram drawn across about a point of its own, where a scene holds
 // where everything is on the page. Pele's SVG is drawn here with its numbers written out in
-// full, as the oracle's hooks have num() write them while limuExactNumbers is set; the hooks
+// full, as the oracle's hooks have num() write them while oracleExactNumbers is set; the hooks
 // also write each label, the point it is centered on and all that is in it, and each marker,
 // its tip and the way it points, which stand here in place of Pele's drawing of them. A
-// number in the body is moved as limu's layout moves it: the number plus the body's move, in
+// number in the body is moved as a port's layout moves it: the number plus the body's move, in
 // that order. The lines hold every number in full, as String() writes it, so that a
 // difference in the last bit shows.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { attr, TRANSLATE, n, capJoin } from '../lib/svg.mjs';
-import { readLabel, readMarker, withoutPele } from '../lib/limu.mjs';
+import { readLabel, readMarker, withoutPele } from '../lib/marks.mjs';
 import { FRAGMENTS, corpus, hostileCorpus, outlines } from './ishikawa.mjs';
 
 // The icons the host has, in the cases drawn with icons.
@@ -71,7 +71,7 @@ export function readSvg(svg, fontSize) {
     }
     return out.join(' ');
   };
-  for (const m of body.matchAll(/<(\/?)(g|rect|path|limu-label|limu-marker)\b[^>]*>/g)) {
+  for (const m of body.matchAll(/<(\/?)(g|rect|path|oracle-label|oracle-marker)\b[^>]*>/g)) {
     const e = m[0];
     if (m[1]) {
       if (m[2] === 'g') open.pop();
@@ -100,12 +100,12 @@ export function readSvg(svg, fontSize) {
         lines.push(`${kind} ${path(attr(e, 'd'))} ${paint(e)} ${pen(e)}`);
         break;
       }
-      case 'limu-marker': {
+      case 'oracle-marker': {
         const k = readMarker(e);
         lines.push(`marker ${k.type} ${pt(k.x, k.y)} ${n(k.dx)},${n(k.dy)} ${k.color}`);
         break;
       }
-      case 'limu-label': {
+      case 'oracle-label': {
         const l = readLabel(e);
         const fill = /fill="([^"]*)"/.exec(l.attrs)?.[1] ?? '-';
         const weight = /font-weight="([^"]*)"/.exec(l.attrs)?.[1] ?? '-';
@@ -131,14 +131,14 @@ export default async function ({ src, pele, write, random }) {
   const host = (name) => (ICONS.includes(name) ? '<path d="M0,0"/>' : undefined);
   const draw = (source, maxWidth, fontSize, icons) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, icons: icons ? host : undefined, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'ishikawa') return false;
     out.push({ src: source, maxWidth, fontSize, icons: icons || undefined, lines: readSvg(r.svg, fontSize ?? 16) });
@@ -148,7 +148,7 @@ export default async function ({ src, pele, write, random }) {
   let drawn = 0;
   const narrow = [360, 480, 200, 100, 600, 300, 140, 40];
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 4000) return;
     seen.add(source);
     if (!draw(source, undefined, undefined, drawn % 5 === 1)) return;
@@ -165,7 +165,7 @@ export default async function ({ src, pele, write, random }) {
   const usable = [...seen].filter((s) => s.length <= 3000);
   const next = mutator(usable, FRAGMENTS, random(52));
   for (let i = 0; drawn < 3000 && i < 40000; i++) each(next());
-  // The test draws the arcs of the head's outline again as limu draws them, so its lines are
+  // The test draws the arcs of the head's outline again as a port draws them, so its lines are
   // kept in full.
-  write('diagram/ishikawa/testdata/pele/render.json', { cases: out }, { keep: (line) => line.startsWith('outline ') });
+  write('ishikawa-render', { cases: out }, { keep: (line) => line.startsWith('outline ') });
 }

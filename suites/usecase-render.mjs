@@ -1,11 +1,11 @@
 // Use case diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // A scene has no groups to move what is in them, so it holds where everything is on the page,
 // where Pele writes the inside of a node about the node's middle, and an actor's figure about a
 // point of its own. Pele's SVG is drawn here with its numbers written out in full, as the
-// oracle's hooks have num() write them while limuExactNumbers is set. A number inside groups is
-// moved as limu's render moves it: the groups' moves are added up from the outermost in, the
+// oracle's hooks have num() write them while oracleExactNumbers is set. A number inside groups is
+// moved as a port's render moves it: the groups' moves are added up from the outermost in, the
 // number is added to their sum, and only then is it written to two decimals as Pele writes it.
 import { join } from 'node:path';
 import { lone } from '../lib/corpus.mjs';
@@ -291,7 +291,7 @@ export default async function ({ src, pele, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
@@ -299,7 +299,7 @@ export default async function ({ src, pele, write, random }) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'usecase') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg, num) });
@@ -308,7 +308,7 @@ export default async function ({ src, pele, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -329,5 +329,5 @@ export default async function ({ src, pele, write, random }) {
     if (s.length <= 3000) each(s);
   }
   FILLS.forEach(each);
-  write('diagram/usecase/testdata/pele/render.json', { cases: out });
+  write('usecase-render', { cases: out });
 }

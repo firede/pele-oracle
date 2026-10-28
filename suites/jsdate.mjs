@@ -153,5 +153,5 @@ export default async function ({ write, random }) {
     });
   }
   process.env.TZ = saved;
-  write('internal/jsdate/testdata/pele/jsdate.json', out);
+  write('jsdate', out);
 }

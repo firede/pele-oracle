@@ -1,18 +1,18 @@
 // User journey diagrams drawn end to end: what Pele's render draws, read back out of its SVG as
-// one line per thing drawn, in the order drawn. limu's test writes the same lines from its
+// one line per thing drawn, in the order drawn. A port's test writes the same lines from its
 // scene.
 //
 // Pele draws a face about its middle, in a group moved there; the scene holds where every
 // part of it is on the page. Pele's SVG is drawn here with its numbers written out in full, as
-// the oracle's hooks have num() write them while limuExactNumbers is set, and a number in a
-// face is moved as limu moves it, the face's middle added to it, before it is written to two
+// the oracle's hooks have num() write them while oracleExactNumbers is set, and a number in a
+// face is moved as a port moves it, the face's middle added to it, before it is written to two
 // decimals as Pele writes it.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, TRANSLATE } from '../lib/svg.mjs';
 import { FRAGMENTS, corpus, randomDiagrams } from './journey.mjs';
 
-// A series' color as Pele writes it, by the name of limu's token.
+// A series' color as Pele writes it, by the name of a port's token.
 const paintName = (p) => (p === undefined ? '-' : p.replace(/^var\(--pele-(series-\d),[^)]*\)$/, '$1'));
 
 // The lines of a journey diagram's SVG, drawn with its numbers in full; num writes a number as
@@ -173,14 +173,14 @@ export default async function ({ src, pele, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'journey') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg, num) });
@@ -189,7 +189,7 @@ export default async function ({ src, pele, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -210,5 +210,5 @@ export default async function ({ src, pele, write, random }) {
     const s = next();
     if (s.length <= 3000) each(s);
   }
-  write('diagram/journey/testdata/pele/render.json', { cases: out });
+  write('journey-render', { cases: out });
 }

@@ -400,5 +400,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/packet/testdata/pele/packet.json', { cases: all.map(run) });
+  write('packet', { cases: all.map(run) });
 }

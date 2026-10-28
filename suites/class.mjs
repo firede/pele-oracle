@@ -335,5 +335,5 @@ export default async function ({ src, cases, write, random }) {
     members.push({ input: s, kind, member: dumpMember(new ClassMember(s, kind)) });
   }
 
-  write('diagram/class/testdata/pele/class.json', { diagrams: all.map((src) => ({ src, ...run(src) })), members });
+  write('class', { diagrams: all.map((src) => ({ src, ...run(src) })), members });
 }

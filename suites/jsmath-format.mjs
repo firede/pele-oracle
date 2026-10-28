@@ -38,5 +38,5 @@ export default async function ({ write, random }) {
     }
     k++;
   }
-  write('internal/jsmath/testdata/pele/format.json', { cases });
+  write('jsmath-format', { cases });
 }

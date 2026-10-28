@@ -1,6 +1,6 @@
 // Flowcharts drawn end to end, some with a padding other than Pele's 8: what Pele's render
 // draws, read back out of its SVG as one line per thing drawn, in the order drawn, with
-// numbers as the SVG writes them. limu's test writes the same lines from its scene.
+// numbers as the SVG writes them. A port's test writes the same lines from its scene.
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, tag, capJoin, readCasings } from '../lib/svg.mjs';
 
@@ -185,10 +185,10 @@ export default async function ({ src, cases, write, random }) {
   const next = mutator([...flowcharts, ...FILLS], FRAGMENTS, random(11));
   while (drawn < 2000) {
     const s = next();
-    // A mutation may split a pair of surrogates, which JSON cannot carry to Go as it is.
+    // A mutation may split a pair of surrogates, which JSON cannot carry to a port as it is.
     if (s.length <= 3000 && s.isWellFormed()) each(s);
   }
   // The test reads a line with a tag among its classes with the tag moved last, so the lines
   // that name one are kept in full.
-  write('diagram/flowchart/testdata/pele/render.json', { cases: out }, { keep: (line) => line.includes('clickable') });
+  write('flowchart-render', { cases: out }, { keep: (line) => line.includes('clickable') });
 }

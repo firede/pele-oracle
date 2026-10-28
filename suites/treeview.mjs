@@ -410,5 +410,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/treeview/testdata/pele/treeview.json', { cases: all.map(run) });
+  write('treeview', { cases: all.map(run) });
 }

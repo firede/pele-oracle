@@ -432,5 +432,5 @@ export default async function ({ src, pele, write, random }) {
   // A case whose blocks run to thousands, as space:99999 makes them, is left out: the fixture
   // would hold every one of them.
   const cases = all.map(run).filter((c) => JSON.stringify(c).length <= 60000);
-  write('diagram/block/testdata/pele/block.json', { cases });
+  write('block', { cases });
 }

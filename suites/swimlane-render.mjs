@@ -194,7 +194,7 @@ export default async function ({ pele, src, cases, write, random }) {
     draw(s, undefined, { limit: Infinity });
     draw(s, 360, { limit: Infinity });
   }
-  // A payload with half a pair of surrogates can't be carried to Go as it is.
+  // A payload with half a pair of surrogates can't be carried to a port as it is.
   for (const template of TEMPLATES) for (const p of payloads(pele)) if (p.isWellFormed()) each(template(p));
   const flowcharts = cases('flowchart').extracted.map(toSwimlane).filter(isSwimlane);
   flowcharts.forEach(each);
@@ -202,11 +202,11 @@ export default async function ({ pele, src, cases, write, random }) {
   const next = mutator(corpus, FRAGMENTS, random(29));
   while (drawn < 2200) {
     const s = next();
-    // A mutation may split a pair of surrogates, which JSON cannot carry to Go as it is.
+    // A mutation may split a pair of surrogates, which JSON cannot carry to a port as it is.
     if (s.length <= 3000 && s.isWellFormed()) each(s);
   }
   console.log(`swimlane: ${docs.length} docs, ${own.length} written, ${flowcharts.length} flowcharts, ${out.length} drawn`);
   // The test reads a line with a tag among its classes with the tag moved last, so the lines
   // that name one are kept in full.
-  write('diagram/swimlane/testdata/pele/render.json', { cases: out }, { keep: (line) => line.includes('clickable') });
+  write('swimlane-render', { cases: out }, { keep: (line) => line.includes('clickable') });
 }

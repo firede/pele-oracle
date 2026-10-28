@@ -1,19 +1,19 @@
 // Wardley maps drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws the map in a group it moves onto the page, where a scene holds every place on
 // the page. Pele's SVG is drawn here with its numbers written in full, as the oracle's hooks
-// have num() write them while limuExactNumbers is set, and with each label and marker
+// have num() write them while oracleExactNumbers is set, and with each label and marker
 // written as the point it is drawn about, as the hooks have Pele's wardley render write them.
-// A number inside the group is moved as limu's layout moves it, the group's move added to
+// A number inside the group is moved as a port's layout moves it, the group's move added to
 // it, and the lines hold every number in full, as String() writes it, so that a difference
-// in the last bit shows. A label whose lines start at a point is written where limu centers
-// it: its first baseline less a little over a third of its size, and down by half of what
+// in the last bit shows. A label whose lines start at a point is written where a port
+// centers it: its first baseline less a little over a third of its size, and down by half of what
 // its lines after the first take.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, n } from '../lib/svg.mjs';
-import { readLabel, readMarker } from '../lib/limu.mjs';
+import { readLabel, readMarker } from '../lib/marks.mjs';
 import { FRAGMENTS, corpus, hostile, randomMaps } from './wardley.mjs';
 
 // The icons the host has, in the cases drawn with icons.
@@ -72,7 +72,7 @@ export function readSvg(svg) {
     const l = readLabel(e);
     const kind = l.align === 'start' ? 'start' : 'label';
     const own = (name) => new RegExp(`\\s${name}="([^"]*)"`).exec(l.attrs)?.[1] ?? '-';
-    // A weight on the text draws every span of it bold, as limu's scene holds it.
+    // A weight on the text draws every span of it bold, as a port's scene holds it.
     const weight = own('font-weight') === '-' ? 0 : 1;
     const spans = l.lines
       .map((line) => line.map((s) => (s.icon !== undefined ? `i:${s.icon}` : `t:${FACES[(s.style | weight) & 3]}:${s.text}`)).join(' + '))
@@ -84,7 +84,7 @@ export function readSvg(svg) {
     return `${kind} ${own('class')} ${own('font-size')} ${own('fill')} ${own('font-weight')}${turn ? ` turn ${turn[1]}` : ''} ${pt(x, y)} ${n(w)},${n(h)} ${n(size)} ${n(lh)} | ${spans}`;
   };
 
-  const tags = /<(\/?)(g|path|rect|circle|svg|limu-label|limu-marker)\b[^>]*>/g;
+  const tags = /<(\/?)(g|path|rect|circle|svg|oracle-label|oracle-marker)\b[^>]*>/g;
   // Inside an icon, whose drawing is the host's.
   let icon = false;
   for (const m of svg.matchAll(tags)) {
@@ -117,15 +117,15 @@ export function readSvg(svg) {
         break;
       }
       case 'circle': {
-        // Its middle, and the right and the bottom of it as limu's path of it holds them.
+        // Its middle, and the right and the bottom of it as a port's path of it holds them.
         const [cx, cy, r] = [Number(attr(e, 'cx')), Number(attr(e, 'cy')), Number(attr(e, 'r'))];
         lines.push(`circle ${pt(cx, cy)} ${pt(cx + r, cy + r)} ${pen(e)}`);
         break;
       }
-      case 'limu-label':
+      case 'oracle-label':
         lines.push(label(e));
         break;
-      case 'limu-marker': {
+      case 'oracle-marker': {
         const k = readMarker(e);
         lines.push(`marker ${k.type} ${pt(k.x, k.y)} ${n(k.dx)},${n(k.dy)} ${k.color}`);
         break;
@@ -143,14 +143,14 @@ export default async function ({ pele, src, write, random }) {
   const host = (name) => (ICONS.includes(name) ? '<path d="M0,0"/>' : undefined);
   const draw = (source, maxWidth, fontSize, icons) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, icons: icons ? host : undefined, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'wardley') return false;
     out.push({ src: source, maxWidth, fontSize, icons: icons || undefined, lines: readSvg(r.svg) });
@@ -161,7 +161,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 4000) return;
     seen.add(source);
     if (!draw(source, undefined, undefined, drawn % 9 === 4)) return;
@@ -188,5 +188,5 @@ export default async function ({ pele, src, write, random }) {
   const usable = [...seen].filter((s) => s.length <= 3000);
   const next = mutator(usable, FRAGMENTS, random(62));
   while (drawn < 2650) each(next());
-  write('diagram/wardley/testdata/pele/render.json', { cases: out });
+  write('wardley-render', { cases: out });
 }

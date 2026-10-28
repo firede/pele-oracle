@@ -352,5 +352,5 @@ export default async function ({ src, cases, write, random }) {
     if (!lone(s) && s.length <= 4000) fuzz.push(s);
   }
   const all = [...new Set([...WRITTEN, ...cases('state').extracted, ...templated, ...fuzz])].filter((s) => !lone(s));
-  write('diagram/state/testdata/pele/state.json', { states: all.map((s) => ({ src: s, ...run(s) })) });
+  write('state', { states: all.map((s) => ({ src: s, ...run(s) })) });
 }

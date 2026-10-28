@@ -1,14 +1,14 @@
 // Block diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
 // line per thing drawn, in the order drawn, and the errors of the diagrams it refuses to draw.
-// limu's test writes the same lines from its scene. An edge says the color its group strokes it
+// A port's test writes the same lines from its scene. An edge says the color its group strokes it
 // in where it lies inside a fill, and the casings under edges that cross the border of one are
 // read as they are drawn, before the edges.
 //
 // A scene has no groups to move what is in them, so it holds where everything is on the page,
 // where Pele writes the inside of a block about the block's middle. Pele's SVG is drawn here
 // with its numbers written out in full, as the oracle's hooks have num() write them while
-// limuExactNumbers is set, and the lines hold every number in full, as String() writes it, so
-// that a difference in the last bit shows. A number inside a block is moved as limu moves it:
+// oracleExactNumbers is set, and the lines hold every number in full, as String() writes it, so
+// that a difference in the last bit shows. A number inside a block is moved as a port moves it:
 // the block's middle plus the number, in that order. While the flag is set the hooks also
 // have each label of a block diagram write the point it is centered on, its size and its
 // spans, and each block the size it is drawn at, which its shape is drawn from: the shapes
@@ -16,7 +16,7 @@
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { attr, TRANSLATE, n, pt, capJoin } from '../lib/svg.mjs';
-import { readLabel } from '../lib/limu.mjs';
+import { readLabel } from '../lib/marks.mjs';
 import { FRAGMENTS, corpus, randomDiagrams } from './block.mjs';
 
 // The last opacity an element's style attribute gives a property, as a browser takes it over
@@ -67,9 +67,9 @@ function path(d, dx = 0, dy = 0) {
 }
 
 // The line of a label as the hooks write it before its text: the point it is centered on,
-// moved by dx, dy as limu moves it, its size, the fill of its text, and its spans.
+// moved by dx, dy as a port moves it, its size, the fill of its text, and its spans.
 function label(s, dx, dy) {
-  const at = s.indexOf('<limu-label ');
+  const at = s.indexOf('<oracle-label ');
   if (at < 0) return undefined;
   const l = readLabel(s.slice(at, s.indexOf('/>', at) + 2));
   const text = s.slice(s.indexOf('<text', at), s.indexOf('>', s.indexOf('<text', at)));
@@ -88,7 +88,7 @@ export function readSvg(svg) {
   const head = svg.slice(svg.indexOf('<svg'), svg.indexOf('>'));
   lines.push(`size ${pt(attr(head, 'width'), attr(head, 'height'))}`);
   const title = svg.indexOf('<text class="pele-title"');
-  if (title >= 0) lines.push('title ' + label(svg.slice(svg.lastIndexOf('<limu-label ', title))));
+  if (title >= 0) lines.push('title ' + label(svg.slice(svg.lastIndexOf('<oracle-label ', title))));
   const edgesOpen = /<g class="pele-edges"[^>]*>/.exec(svg)?.[0];
   const starts = [...svg.matchAll(GROUP)];
   for (let k = 0; k < starts.length; k++) {
@@ -111,10 +111,10 @@ export function readSvg(svg) {
         const t = TRANSLATE.exec(attr(open, 'transform'));
         const tx = Number(t[1]);
         const ty = Number(t[2]);
-        const [bw, bh] = attr(open, 'data-limu').split(' ').map(Number);
+        const [bw, bh] = attr(open, 'data-oracle').split(' ').map(Number);
         const shape = cls[1].slice('pele-shape-'.length);
         lines.push(`node ${id} ${shape} [${cls.slice(2).join(' ')}] ${pt(tx - bw / 2, ty - bh / 2)},${pt(bw, bh)}`);
-        const end = s.indexOf('<limu-label ');
+        const end = s.indexOf('<oracle-label ');
         const shapes = [...(end < 0 ? s : s.slice(0, end)).matchAll(SHAPE)].map((m) => m[0]);
         for (const e of shapes) {
           lines.push(`part ${paint(e)}`);
@@ -188,7 +188,7 @@ export default async function ({ src, pele, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
@@ -197,7 +197,7 @@ export default async function ({ src, pele, write, random }) {
       if (e.code === 'semantic') out.push({ src: source, maxWidth, fontSize, error: e.message });
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'block') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg) });
@@ -206,7 +206,7 @@ export default async function ({ src, pele, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 4000) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -270,5 +270,5 @@ export default async function ({ src, pele, write, random }) {
   const cases = out.filter((c) => JSON.stringify(c).length <= 40000);
   // The test writes the curves of an arc as the arc of Pele's line where ArcTo draws it
   // with those curves, so the lines of paths with arcs are kept in full.
-  write('diagram/block/testdata/pele/render.json', { cases }, { keep: (line) => line.startsWith('path ') && line.includes(' A ') });
+  write('block-render', { cases }, { keep: (line) => line.startsWith('path ') && line.includes(' A ') });
 }

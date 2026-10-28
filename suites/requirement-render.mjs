@@ -1,5 +1,5 @@
 // Requirement diagrams drawn end to end: what Pele's render draws, read back out of its SVG as
-// one line per thing drawn, in the order drawn, with numbers as the SVG writes them. limu's
+// one line per thing drawn, in the order drawn, with numbers as the SVG writes them. A port's
 // test writes the same lines from its scene.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
@@ -185,5 +185,5 @@ export default async function ({ src, cases, write, random }) {
     if (s.length <= 3000 && !lone(s)) each(s);
   }
   FILLS.forEach(each);
-  write('diagram/requirement/testdata/pele/render.json', { cases: out });
+  write('requirement-render', { cases: out });
 }

@@ -2,9 +2,9 @@
 // finds `x.ts`, and a JSON file is a module with its fields as named exports.
 //
 // A suite that reads numbers back out of an SVG to work with them sets
-// globalThis.limuExactNumbers while Pele draws, and the patches below then have Pele write what
+// globalThis.oracleExactNumbers while Pele draws, and the patches below then have Pele write what
 // the suite needs to compare with the scene; while it is not set, Pele draws as it does. The
-// labels and markers are written as lib/limu.mjs says, before what Pele writes of them.
+// labels and markers are written as lib/marks.mjs says, before what Pele writes of them.
 //
 //   diagram       patched                                  writes
 //   all           num                                      numbers in full, as String writes them
@@ -16,9 +16,9 @@
 //   c4            labelSvg, leftLabelSvg, marker, nodes    its labels and markers; data-wh, the size of a shape
 //   tree view     labelSvg, leftLabelSvg, texts            its labels; as y, m and the middle of a row
 //   mindmap       labelSvg, leftLabel, nodes               its labels; data-w, data-h and data-top, a node's size and top
-//   info          labelSvg, the name                       its labels; the text limuInfoText gives in place of Pele's name
+//   info          labelSvg, the name                       its labels; the text oracleInfoText gives in place of Pele's name
 //   sankey        the labels' baseline                     as y, m and the middle of the line
-//   block         labelSvg, blocks                         its labels; data-limu, the size a block is drawn at
+//   block         labelSvg, blocks                         its labels; data-oracle, the size a block is drawn at
 //   wardley       labelSvg, startLabel, marker             its labels and markers
 //   ishikawa      labelSvg, marker                         its labels and markers
 //   cynefin       labelSvg, marker                         its labels and markers
@@ -35,8 +35,8 @@ export async function resolve(spec, ctx, next) {
   return next(spec, ctx);
 }
 
-const EXACT = '(globalThis as any).limuExactNumbers';
-const LIMU = new URL('./lib/limu.mjs', import.meta.url).href;
+const EXACT = '(globalThis as any).oracleExactNumbers';
+const LIMU = new URL('./lib/marks.mjs', import.meta.url).href;
 
 // Replaces find in source with what replace gives, where find occurs exactly count times: a
 // string, which is put in as it is, or a function of what is found.
@@ -85,13 +85,13 @@ const replace = (find, replace) => (url, source) => patch(url, source, find, rep
 const label = (params, x, y, align, attrs = 'attrs') => (name) => `
 function ${name}(${params}): string {
   const s = ${name}Pele(${params.split(',').map((p) => p.split(/[?:]/)[0].trim()).join(', ')});
-  return ${EXACT} ? limuLabel(label, ${x}, ${y}, ${align}, ${attrs}, s) : s;
+  return ${EXACT} ? oracleLabel(label, ${x}, ${y}, ${align}, ${attrs}, s) : s;
 }
 `;
 const marker = (name) => `
 function ${name}(type: string, x: number, y: number, dx: number, dy: number, color: string): string {
   const s = ${name}Pele(type, x, y, dx, dy, color);
-  return ${EXACT} ? limuMarker(type, x, y, dx, dy, color, s) : s;
+  return ${EXACT} ? oracleMarker(type, x, y, dx, dy, color, s) : s;
 }
 `;
 // An edge's label, drawn on a patch of the background: the label is written in the group,
@@ -101,7 +101,7 @@ function ${name}(id: string, label: any, x: number, y: number, attrs: string, ic
   const s = ${name}Pele(id, label, x, y, attrs, icons);
   if (!${EXACT}) return s;
   const bare = ${name}Pele(id, { ...label, lines: [] }, x, y, attrs, icons).slice(0, -'</g>'.length);
-  return bare + limuLabel(label, x, y, 'middle', attrs, s.slice(bare.length, -'</g>'.length)) + '</g>';
+  return bare + oracleLabel(label, x, y, 'middle', attrs, s.slice(bare.length, -'</g>'.length)) + '</g>';
 }
 `;
 const centered = label('label: any, cx: number, cy: number, attrs: string, icons?: any', 'cx', 'cy', "'middle'");
@@ -143,12 +143,12 @@ const PATCHES = {
   ],
   'diagrams/info/render.ts': [
     wrapImport(BUILDER, { labelSvg: centered }),
-    replace('layoutLabel(`Pele v${version}`', `layoutLabel((globalThis as any).limuInfoText ?? \`Pele v\${version}\``),
+    replace('layoutLabel(`Pele v${version}`', `layoutLabel((globalThis as any).oracleInfoText ?? \`Pele v\${version}\``),
   ],
   'diagrams/sankey/render.ts': [midline('num(y + small * 0.35)', 'y')],
   'diagrams/block/render.ts': [
     wrapImport(BUILDER, { labelSvg: centered }),
-    attribute('transform="translate(${num(v.x)},${num(v.y)})"', '>`', 'data-limu="${v.bw} ${v.bh}"'),
+    attribute('transform="translate(${num(v.x)},${num(v.y)})"', '>`', 'data-oracle="${v.bw} ${v.bh}"'),
   ],
   'diagrams/wardley/render.ts': [
     wrapImport(BUILDER, { labelSvg: centered }),
@@ -169,8 +169,8 @@ export async function load(url, ctx, next) {
     const loaded = await next(url, ctx);
     let source = String(loaded.source);
     for (const p of PATCHES[file]) source = p(url, source);
-    if (source.includes('limuLabel(') || source.includes('limuMarker(')) {
-      source = `import { writeLabel as limuLabel, writeMarker as limuMarker } from '${LIMU}';\n` + source;
+    if (source.includes('oracleLabel(') || source.includes('oracleMarker(')) {
+      source = `import { writeLabel as oracleLabel, writeMarker as oracleMarker } from '${LIMU}';\n` + source;
     }
     return { ...loaded, source, shortCircuit: true };
   }

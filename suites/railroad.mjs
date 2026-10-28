@@ -716,5 +716,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/railroad/testdata/pele/railroad.json', { cases: all.map(run) });
+  write('railroad', { cases: all.map(run) });
 }

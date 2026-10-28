@@ -367,5 +367,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
 
-  write('diagram/xychart/testdata/pele/xychart.json', { cases: all.map(run) });
+  write('xychart', { cases: all.map(run) });
 }

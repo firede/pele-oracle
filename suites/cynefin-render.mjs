@@ -1,12 +1,12 @@
 // Cynefin diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele's SVG is drawn here with its numbers written in full, as the oracle's hooks have num()
-// write them while limuExactNumbers is set, and with each label and marker written as the
+// write them while oracleExactNumbers is set, and with each label and marker written as the
 // point it is drawn about, as the hooks have Pele's cynefin render write them. Pele draws
 // everything where it is on the page, so no number is moved. A path's data is written as
-// Pele writes it, arcs and all; limu's test reads it with scene.ParsePath, which draws arcs
-// with the curves limu's scene draws them with. The lines hold every number in full, as
+// Pele writes it, arcs and all; a port's test reads it with its reader of path data, which
+// draws arcs with the curves a port's scene draws them with. The lines hold every number in full, as
 // String() writes it, so that a difference in the last bit shows.
 //
 // The fixture also holds the seeded numbers of the boundaries, seededRandom and hashString
@@ -15,14 +15,14 @@
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, n } from '../lib/svg.mjs';
-import { readLabel, readMarker } from '../lib/limu.mjs';
+import { readLabel, readMarker } from '../lib/marks.mjs';
 import { BASIC, FRAGMENTS, corpus, hostile, randomDiagrams } from './cynefin.mjs';
 
 // The icons the host has, in the cases drawn with icons.
 export const ICONS = ['star', 'fa:fa-car', 'fa:fa-coffee'];
 
 const FACES = ['-', 'b', 'i', 'bi'];
-// A color of the series as limu's test names it.
+// A color of the series as a port's test names it.
 const paint = (v) => (v === undefined ? '-' : v.replace(/^var\(--pele-series-(\d),[^)]*\)$/, 'series-$1'));
 
 // The lines of a diagram's SVG, drawn with its numbers in full.
@@ -52,7 +52,7 @@ export function readSvg(svg) {
     return `label ${own('class')} ${own('font-size')} ${paint(own('fill') === '-' ? undefined : own('fill'))} ${own('font-weight')} ${own('font-style')} ${n(l.x)},${n(l.y)} ${n(l.width)},${n(l.height)} ${n(l.size)} ${n(l.lineHeight)} | ${spans}`;
   };
 
-  const tags = /<(\/?)(g|path|rect|svg|limu-label|limu-marker)\b[^>]*>/g;
+  const tags = /<(\/?)(g|path|rect|svg|oracle-label|oracle-marker)\b[^>]*>/g;
   // Inside an icon, whose drawing is the host's.
   let icon = false;
   for (const m of svg.matchAll(tags)) {
@@ -82,10 +82,10 @@ export function readSvg(svg) {
         lines.push(`rect ${n(Number(attr(e, 'x')))},${n(Number(attr(e, 'y')))},${n(Number(attr(e, 'width')))},${n(Number(attr(e, 'height')))} ${r} ${pen(e)}`);
         break;
       }
-      case 'limu-label':
+      case 'oracle-label':
         lines.push(label(e));
         break;
-      case 'limu-marker': {
+      case 'oracle-marker': {
         const k = readMarker(e);
         lines.push(`marker ${k.type} ${n(k.x)},${n(k.y)} ${n(k.dx)},${n(k.dy)} ${k.color}`);
         break;
@@ -104,14 +104,14 @@ export default async function ({ pele, src, write, random }) {
   const host = (name) => (ICONS.includes(name) ? '<path d="M0,0"/>' : undefined);
   const draw = (source, fontSize, icons) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, fontSize, icons: icons ? host : undefined, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'cynefin') return false;
     out.push({ src: source, fontSize, icons: icons || undefined, lines: readSvg(r.svg) });
@@ -121,7 +121,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source) || source.length > 4000) return;
     seen.add(source);
     if (!draw(source, undefined, drawn % 9 === 4)) return;
@@ -164,5 +164,5 @@ export default async function ({ pele, src, write, random }) {
   // The test reads the data of a path as the scene would draw it, which writes again what is
   // not a move, a line, a curve or a close, as arcs, so the lines of such paths are kept in
   // full: the data is what lies between the class and id and the six fields of the pen.
-  write('diagram/cynefin/testdata/pele/render.json', { cases: out, randoms, hashes }, { keep: (line) => line.startsWith('path ') && /[^MLQCZ0-9.,\s-]/.test(line.split(' ').slice(3, -6).join(' ')) });
+  write('cynefin-render', { cases: out, randoms, hashes }, { keep: (line) => line.startsWith('path ') && /[^MLQCZ0-9.,\s-]/.test(line.split(' ').slice(3, -6).join(' ')) });
 }

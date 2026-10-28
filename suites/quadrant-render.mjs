@@ -1,16 +1,16 @@
 // Quadrant charts drawn end to end: what Pele's render draws, read back out of its SVG as one
-// line per thing drawn, in the order drawn. limu's test writes the same lines from its scene.
+// line per thing drawn, in the order drawn. A port's test writes the same lines from its scene.
 //
 // Pele draws a quadrant chart with no groups that move what is in them but the turn of each
 // label of the y axis, which the scene holds as the label's turn about the same point, so its
 // numbers are where the scene has them. They are drawn here written out in full, as the
-// oracle's hooks have num() write them while limuExactNumbers is set, and compared whole.
+// oracle's hooks have num() write them while oracleExactNumbers is set, and compared whole.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, capJoin } from '../lib/svg.mjs';
 import { FRAGMENTS, corpus, randomDiagrams } from './quadrant.mjs';
 
-// A color of a point's style, as limu's test writes one: a hex code of six digits, in lower
+// A color of a point's style, as a port's test writes one: a hex code of six digits, in lower
 // case.
 const color = (c) => {
   if (!/^#[\da-f]+$/i.test(c)) return c;
@@ -119,14 +119,14 @@ export default async function ({ src, pele, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'quadrantChart') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg) });
@@ -137,7 +137,7 @@ export default async function ({ src, pele, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -163,5 +163,5 @@ export default async function ({ src, pele, write, random }) {
     const s = next();
     if (s.length <= 3000) each(s);
   }
-  write('diagram/quadrant/testdata/pele/render.json', { cases: out });
+  write('quadrant-render', { cases: out });
 }

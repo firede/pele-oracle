@@ -1,14 +1,14 @@
 // Pie charts drawn end to end, some with a padding other than Pele's 8: what Pele's render draws, read back out of its SVG as one line
-// per thing drawn, in the order drawn, and the errors of the charts it refuses to draw. limu's
+// per thing drawn, in the order drawn, and the errors of the charts it refuses to draw. A port's
 // test writes the same lines from its scene.
 //
 // Pele draws the slices and their percentages in groups moved to the pie's center, where the
 // scene holds every place on the page. Pele's SVG is drawn here with its numbers written out
-// in full, as the oracle's hooks have num() write them while limuExactNumbers is set, and each
+// in full, as the oracle's hooks have num() write them while oracleExactNumbers is set, and each
 // number in a moved group is moved here as the scene's is, the center added to it, so that the
 // lines hold every number in full, as String() writes it, and a difference in the last bit
 // shows. A percentage's baseline is where Pele puts it before it adds the shift, which the
-// hooks write as data-y, moved, with the shift added after, as limu's test adds it to the
+// hooks write as data-y, moved, with the shift added after, as a port's test adds it to the
 // middle of the label.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
@@ -181,14 +181,14 @@ export default async function ({ pele, src, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize, padding) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, padding, outputLimit: Infinity });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'pie') return false;
     out.push({ src: source, maxWidth, fontSize, padding, lines: readSvg(r.svg, fontSize) });
@@ -200,7 +200,7 @@ export default async function ({ pele, src, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -226,5 +226,5 @@ export default async function ({ pele, src, write, random }) {
   }
   // The test writes the curves of an arc as the arc of Pele's line where ArcTo draws it
   // with those curves, so the lines of circles and of paths with arcs are kept in full.
-  write('diagram/pie/testdata/pele/render.json', { cases: out }, { keep: (line) => line.startsWith('circle ') || (line.startsWith('path ') && line.includes(' A ')) });
+  write('pie-render', { cases: out }, { keep: (line) => line.startsWith('circle ') || (line.startsWith('path ') && line.includes(' A ')) });
 }

@@ -336,5 +336,5 @@ export default async function ({ src, cases, write, random }) {
     if (!lone(s) && s.length <= 4000) fuzz.push(s);
   }
   const all = [...WRITTEN, ...c.extracted, ...fuzz].map((x) => (typeof x === 'string' ? { src: x } : x));
-  write('diagram/flowchart/testdata/pele/flowchart.json', { flowcharts: all.map((x) => ({ ...x, ...run(x.src, x.maxEdges) })) });
+  write('flowchart', { flowcharts: all.map((x) => ({ ...x, ...run(x.src, x.maxEdges) })) });
 }

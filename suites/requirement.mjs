@@ -358,5 +358,5 @@ export default async function ({ src, cases, write, random }) {
   const rndGraph = random(9);
   const graphs = Array.from({ length: 1000 }, () => generated(rndGraph));
   const sources = [...new Set([...all, ...fuzz, ...assembled, ...graphs])];
-  write('diagram/requirement/testdata/pele/requirement.json', { cases: sources.map((s) => ({ src: s, ...run(s) })) });
+  write('requirement', { cases: sources.map((s) => ({ src: s, ...run(s) })) });
 }

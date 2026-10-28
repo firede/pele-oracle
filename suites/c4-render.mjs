@@ -1,11 +1,11 @@
 // C4 diagrams drawn end to end: what Pele's render draws, read back out of its SVG as one line
 // per thing drawn, in the order drawn, and the errors of the diagrams it refuses to draw.
-// limu's test writes the same lines from its scene.
+// A port's test writes the same lines from its scene.
 //
 // Pele draws all but the title in a group moved by the diagram's padding, and the inside of
 // each shape about the shape's middle; a scene holds every place on the page. Pele's SVG is
 // drawn here with its numbers written out in full, as the oracle's hooks have num() write them
-// while limuExactNumbers is set. A number inside groups is moved as limu moves it: the groups'
+// while oracleExactNumbers is set. A number inside groups is moved as a port moves it: the groups'
 // moves are added up from the outermost in, and the number is added to their sum. The lines
 // hold every number in full, as String() writes it, so that a difference in the last bit
 // shows. The hooks also have the C4 renderer write, before each label, the point it is drawn
@@ -13,13 +13,13 @@
 // shape its width and height, which the SVG holds only worked into other numbers.
 //
 // The author's colors are written as the style attribute Pele gives an element, after css=;
-// the test reads them with limu's reader of declarations before it compares.
+// the test reads them with a port's reader of declarations before it compares.
 import { join } from 'node:path';
 import { peleError } from '../lib/value.mjs';
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, n, readHead } from '../lib/svg.mjs';
-import { readLabel, readMarker } from '../lib/limu.mjs';
+import { readLabel, readMarker } from '../lib/marks.mjs';
 import { FRAGMENTS, corpus, drawableDiagrams, statementDiagrams } from './c4.mjs';
 
 const TRANSLATE = /^translate\(([^,]*),([^)]*)\)$/;
@@ -149,12 +149,12 @@ export function readSvg(svg) {
         else if (within('pele-edge')) lines.push(`path ${path(attr(whole, 'd'))}`);
         else lines.push(`${name} outside`);
         break;
-      case 'limu-marker': {
+      case 'oracle-marker': {
         const k = readMarker(whole);
         lines.push(`m ${k.type} ${pt(k.x, k.y)} ${n(k.dx)},${n(k.dy)}`);
         break;
       }
-      case 'limu-label':
+      case 'oracle-label':
         pending = label(whole);
         break;
       case 'text':
@@ -182,7 +182,7 @@ export default async function ({ src, pele, write, random }) {
   const out = [];
   const draw = (source, maxWidth, fontSize) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, outputLimit: Infinity });
     } catch (e) {
@@ -192,7 +192,7 @@ export default async function ({ src, pele, write, random }) {
       out.push({ src: source, maxWidth, fontSize, error: peleError(e) });
       return true;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'c4') return false;
     out.push({ src: source, maxWidth, fontSize, lines: readSvg(r.svg) });
@@ -201,7 +201,7 @@ export default async function ({ src, pele, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -222,11 +222,11 @@ export default async function ({ src, pele, write, random }) {
     const s = next();
     if (s.length <= 3000) each(s);
   }
-  // The test reads the style Pele writes, css= and all that follows it on the line, as limu
-  // reads declarations, so the lines with one are kept in full.
+  // The test reads the style Pele writes, css= and all that follows it on the line, as a
+  // port reads declarations, so the lines with one are kept in full.
   const keep = (line) => {
     const at = line.indexOf(' css=');
     return at >= 0 && at + ' css='.length < line.length;
   };
-  write('diagram/c4/testdata/pele/render.json', { cases: out }, { keep });
+  write('c4-render', { cases: out }, { keep });
 }

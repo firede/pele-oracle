@@ -1,12 +1,12 @@
 // Sequence diagrams drawn end to end: what Pele's render draws, read back out of its SVG as
-// one line per thing drawn, in the order drawn. limu's test writes the same lines from its
+// one line per thing drawn, in the order drawn. A port's test writes the same lines from its
 // scene.
 //
 // Pele draws a sequence diagram in one group, moved by the padding past the diagram's
 // extents; the scene holds where everything is on the page. Pele's SVG is drawn here with
 // its numbers written out in full, as the oracle's hooks have num() write them while
-// limuExactNumbers is set; each number of a place is moved by the group's move, as limu
-// moves it, and only then written to two decimals as Pele writes it.
+// oracleExactNumbers is set; each number of a place is moved by the group's move, as a
+// port moves it, and only then written to two decimals as Pele writes it.
 import { join } from 'node:path';
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
@@ -173,7 +173,7 @@ export default async function ({ src, pele, write, random }) {
   // monospace is Pele's option, which a case records where it is given.
   const draw = (source, maxWidth, fontSize, monospace) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, monospace, outputLimit: Infinity });
     } catch (e) {
@@ -181,7 +181,7 @@ export default async function ({ src, pele, write, random }) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'sequence') return false;
     out.push({ src: source, maxWidth, fontSize, monospace, lines: readSvg(r.svg, num) });
@@ -191,7 +191,7 @@ export default async function ({ src, pele, write, random }) {
   const shown = [];
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -241,5 +241,5 @@ export default async function ({ src, pele, write, random }) {
   }
   // The test reads the fill an author gave as the style package reads it, so the lines with
   // one are kept in full.
-  write('diagram/sequence/testdata/pele/render.json', { cases: out }, { keep: (line) => line.includes(' author="') });
+  write('sequence-render', { cases: out }, { keep: (line) => line.includes(' author="') });
 }

@@ -346,5 +346,5 @@ export default async function ({ src, pele, write, random }) {
     seen.delete(s);
     add(s);
   }
-  write('diagram/eventmodeling/testdata/pele/eventmodeling.json', { cases: all.map(run) });
+  write('eventmodeling', { cases: all.map(run) });
 }

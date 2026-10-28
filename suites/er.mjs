@@ -278,5 +278,5 @@ export default async function ({ src, cases, write, random }) {
     if (!lone(s)) sequences.push(s);
   }
   const all = [...[...WRITTEN, ...extracted].map((s) => ({ src: s, ...run(s) })), ...fuzz, ...sequences.map((s) => ({ src: s, ...run(s) }))];
-  write('diagram/er/testdata/pele/er.json', { cases: all });
+  write('er', { cases: all });
 }

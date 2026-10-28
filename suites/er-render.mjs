@@ -1,6 +1,6 @@
 // Entity relationship diagrams drawn end to end: what Pele's render draws, read back out of
 // its SVG as one line per thing drawn, in the order drawn, with numbers as the SVG writes
-// them. limu's test writes the same lines from its scene.
+// them. A port's test writes the same lines from its scene.
 import { lone } from '../lib/corpus.mjs';
 import { mutator } from '../lib/mutate.mjs';
 import { unescape, attr, tag, capJoin } from '../lib/svg.mjs';
@@ -87,7 +87,7 @@ const tags = (s, name) => [...s.matchAll(new RegExp(`<${name} [^>]*>`, 'g'))].ma
 // them from it and the elements it is in, given innermost first.
 const pen = (tag, outer) => capJoin([...outer].reverse().concat([tag]), '/');
 
-// A path's d with its horizontal and vertical lines written as lines to a point, as limu's
+// A path's d with its horizontal and vertical lines written as lines to a point, as a port's
 // paths have them.
 function lines(d) {
   let out = '';
@@ -111,8 +111,8 @@ function lines(d) {
 const GROUP = /<g class="pele-(cluster|edge|edge-label|node)[ "]/g;
 
 // The lines of an ER diagram's SVG, drawn with its numbers whole. Pele draws an entity's
-// parts in a frame about its center, and limu in the diagram's: the reader moves them into
-// the diagram's frame, adding the center as limu does, and then writes every number as
+// parts in a frame about its center, and a port in the diagram's: the reader moves them into
+// the diagram's frame, adding the center as a port does, and then writes every number as
 // Pele's num does.
 export function readSvg(svg, num) {
   const n = (s) => num(Number(s));
@@ -249,14 +249,14 @@ export default async function ({ src, cases, write, random }) {
   // lists them.
   const draw = (source, maxWidth, mono) => {
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, outputLimit: Infinity, monospace: mono ? ['attributes'] : undefined });
     } catch (e) {
       if (!(e instanceof PeleError)) throw e;
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'er') return false;
     out.push({ src: source, maxWidth, ...(mono ? { mono } : {}), lines: readSvg(r.svg, num) });
@@ -282,5 +282,5 @@ export default async function ({ src, cases, write, random }) {
   }
   corpus.slice(0, 300).forEach((s, i) => draw(s, i % 3 === 0 ? 360 : undefined, true));
   for (const s of FILLS) draw(s);
-  write('diagram/er/testdata/pele/render.json', { cases: out });
+  write('er-render', { cases: out });
 }

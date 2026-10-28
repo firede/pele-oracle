@@ -297,5 +297,5 @@ export default async function ({ src, pele, write, random }) {
     add(s);
   }
 
-  write('diagram/mindmap/testdata/pele/mindmap.json', { cases: all.map(run) });
+  write('mindmap', { cases: all.map(run) });
 }

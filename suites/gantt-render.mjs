@@ -1,9 +1,9 @@
 // Gantt charts drawn end to end: what Pele's render draws, read back out of its SVG as one line
-// per thing drawn, in the order drawn, in several time zones against a fixed time. limu's test
+// per thing drawn, in the order drawn, in several time zones against a fixed time. A port's test
 // writes the same lines from its scene.
 //
 // Pele's SVG is drawn here with its numbers written out in full, as the oracle's hooks have num()
-// write them while limuExactNumbers is set; a gantt chart moves nothing inside groups, so each
+// write them while oracleExactNumbers is set; a gantt chart moves nothing inside groups, so each
 // number is read and written to two decimals as Pele writes it.
 import { peleError } from '../lib/value.mjs';
 import { lone } from '../lib/corpus.mjs';
@@ -214,7 +214,7 @@ export default async function ({ src, pele, write, random }) {
     k++;
     process.env.TZ = zone;
     let r;
-    globalThis.limuExactNumbers = true;
+    globalThis.oracleExactNumbers = true;
     try {
       r = render(source, { measurer: metricsMeasurer, maxWidth, fontSize, now, outputLimit: Infinity });
     } catch (e) {
@@ -227,7 +227,7 @@ export default async function ({ src, pele, write, random }) {
       }
       return false;
     } finally {
-      globalThis.limuExactNumbers = false;
+      globalThis.oracleExactNumbers = false;
     }
     if (r.type !== 'gantt') return false;
     out.push({ src: source, zone, now, maxWidth, fontSize, lines: readSvg(r.svg, num) });
@@ -236,7 +236,7 @@ export default async function ({ src, pele, write, random }) {
   const seen = new Set();
   let drawn = 0;
   const each = (source) => {
-    // A Go string cannot hold a surrogate with no partner.
+    // A string in UTF-8, as a port's strings are, cannot hold a surrogate with no partner.
     if (seen.has(source) || lone(source)) return;
     seen.add(source);
     if (!draw(source)) return;
@@ -263,5 +263,5 @@ export default async function ({ src, pele, write, random }) {
     each(`---\nconfig:\n  gantt:\n    barHeight: ${height}\n    barGap: ${gap}\n    topPadding: ${top}\n---\ngantt\ndateFormat YYYY-MM-DD\n${tasks}`);
   }
   process.env.TZ = saved;
-  write('diagram/gantt/testdata/pele/render.json', { zones: ZONES, cases: out });
+  write('gantt-render', { zones: ZONES, cases: out });
 }
