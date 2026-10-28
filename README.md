@@ -13,8 +13,8 @@ fixture depends on the language of the port that reads it.
 
 ## Fixtures
 
-Each release holds the fixtures of one version of Pele, in
-`pele-fixtures-<tag>.tar`, with its SHA-256 beside it. A tag is `pele-<version>-<n>`, where
+Each release holds the fixtures of one version of Pele, in `fixtures.tar`, with its SHA-256
+beside it. A tag is `pele-<version>-<n>`, where
 `n` counts the releases for that version of Pele, so `pele-1.12.0-2` holds the fixtures of
 Pele 1.12.0 written by suites changed since `pele-1.12.0-1`. The archive holds one
 `<suite>.json.gz` for each suite, and `manifest.json`, which records the version and commit
@@ -29,7 +29,7 @@ tests offline after that.
 ./scripts/oracle.sh ../pele              # every suite, into out/
 ./scripts/oracle.sh ../pele flowchart-render
 ./scripts/oracle.sh --full ../pele       # also the full lines of every drawing
-./scripts/pack.sh pele-1.12.0-1          # dist/pele-fixtures-pele-1.12.0-1.tar
+./scripts/pack.sh pele-1.12.0-1          # dist/pele-1.12.0-1/fixtures.tar
 ```
 
 The checkout of Pele must be at the commit the fixtures are for. The oracle runs only on

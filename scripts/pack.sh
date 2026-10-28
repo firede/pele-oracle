@@ -1,5 +1,5 @@
 #!/bin/sh
-# Packs the fixtures in out/ for a release, as dist/pele-fixtures-<tag>.tar, with the archive's
+# Packs the fixtures in out/ for a release, as dist/<tag>/fixtures.tar, with the archive's
 # SHA-256 beside it.
 #
 #   ./scripts/pack.sh <tag>
@@ -56,11 +56,11 @@ for (const name of names) {
   pele = { version: origin.version, commit: origin.commit };
   files[name] = sha256(data);
 }
-mkdirSync('dist', { recursive: true });
+mkdirSync(`dist/${tag}`, { recursive: true });
 writeFileSync('out/manifest.json', JSON.stringify({ tag, pele, oracle, files }, null, 2) + '\n');
-const archive = `dist/pele-fixtures-${tag}.tar`;
+const archive = `dist/${tag}/fixtures.tar`;
 execFileSync('tar', ['-cf', archive, '-C', 'out', 'manifest.json', ...names]);
 const sum = sha256(readFileSync(archive));
-writeFileSync(`${archive}.sha256`, `${sum}  pele-fixtures-${tag}.tar\n`);
+writeFileSync(`${archive}.sha256`, `${sum}  fixtures.tar\n`);
 console.log(`${archive}\nsha256 ${sum}`);
 JS
