@@ -1,0 +1,5 @@
+# The fixtures scripts/oracle.sh writes, and the archives of a release.
+/out/
+/dist/
+
+.DS_Store

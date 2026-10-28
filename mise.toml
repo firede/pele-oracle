@@ -1,0 +1,4 @@
+# Node 24 runs Pele's TypeScript as it is, with --experimental-transform-types, which Node 26 no
+# longer takes.
+[tools]
+node = "24"
