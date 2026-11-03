@@ -59,7 +59,11 @@ for (const name of names) {
 mkdirSync(`dist/${tag}`, { recursive: true });
 writeFileSync('out/manifest.json', JSON.stringify({ tag, pele, oracle, files }, null, 2) + '\n');
 const archive = `dist/${tag}/fixtures.tar`;
-execFileSync('tar', ['-cf', archive, '-C', 'out', 'manifest.json', ...names]);
+// The tar of macOS writes a file's extended attributes as ._ files of their own, which the tar
+// of Linux unpacks beside the fixtures; COPYFILE_DISABLE keeps them out.
+execFileSync('tar', ['-cf', archive, '-C', 'out', 'manifest.json', ...names], {
+  env: { ...process.env, COPYFILE_DISABLE: '1' },
+});
 const sum = sha256(readFileSync(archive));
 writeFileSync(`${archive}.sha256`, `${sum}  fixtures.tar\n`);
 console.log(`${archive}\nsha256 ${sum}`);
