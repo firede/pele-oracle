@@ -24,7 +24,7 @@ ports, limu and limu-rs, to compare with.
 - A change to a suite that changes a fixture is released with a new tag, and the ports pin
   it when they are ready. Say in the release which fixtures changed and why.
 - Run the suites with Node 24 on arm64 (`mise.toml` pins Node). The fixtures follow Pele
-  1.12.0, commit 8aff183.
+  1.13.0, commit 3a2f075.
 
 ## Writing
 

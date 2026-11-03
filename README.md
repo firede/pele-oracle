@@ -29,7 +29,7 @@ tests offline after that.
 ./scripts/oracle.sh ../pele              # every suite, into out/
 ./scripts/oracle.sh ../pele flowchart-render
 ./scripts/oracle.sh --full ../pele       # also the full lines of every drawing
-./scripts/pack.sh pele-1.12.0-1          # dist/pele-1.12.0-1/fixtures.tar
+./scripts/pack.sh pele-1.13.0-1          # dist/pele-1.13.0-1/fixtures.tar
 ```
 
 The checkout of Pele must be at the commit the fixtures are for. The oracle runs only on
